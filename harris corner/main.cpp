@@ -70,42 +70,6 @@ Mat matrix_mul(Mat A, Mat B)
 
 int main()
 {
-	//Mat test
-	Mat test(2, 2, CV_32FC1), test1(2, 2, CV_32FC1);
-	/*for (int i = 0; i<2; i++)
-
-		for (int j = 0; j<2; j++){
-
-			test.at<float>(i, j) = (float)i + j * 2 + 1;
-			cout << test.at<float>(i, j) << " ";
-			test1.at<float>(i, j) = (float)i - j * 2 - 1;
-			cout << test1.at<float>(i, j) << " ";
-
-		}
-	//mulTransposed(test, test, false);
-	for (int i = 0; i<3; i++)
-
-		for (int j = 0; j<3; j++){
-
-			//test.at<float>(i, j) = (float)i + j * 2 + 1;
-			//cout << test.at<float>(i, j) << " ";
-			//test1.at<float>(i, j) = (float)i - j * 2 - 1;
-			//cout << test1.at<float>(i, j) << " ";
-
-		}*/
-	
-	
-	//test1 = test1.t();
-	//multiply(test, test1, test);
-	//for (int i = 0; i<2; i++)
-	//
-	//	for (int j = 0; j<2; j++){
-	//
-	//		cout << test.at<float>(i, j) << " ";
-	//
-	//
-	//	}
-	//cout << "mul:" << test*test1;
 	Mat img = imread("1.jpg"), next_img = imread("2.jpg"), OF_img = img.clone(), gray_img, next_gray_img;
 	cvtColor(img, gray_img, CV_RGB2GRAY);
 	cvtColor(next_img, next_gray_img, CV_RGB2GRAY);
@@ -173,24 +137,25 @@ int main()
 				//Mat.at<...>(col_index, row_index)
 				Mat b(windows_size*windows_size, 1, CV_32FC1), A(windows_size*windows_size, 2, CV_32FC1), ATA, AT, ATb, uv;
 				float sum_Ixx;
+				//compute A and b matrix
 				for (int y = 0; y < windows_size; y++)
 					for (int x = 0; x < windows_size; x++)
 					{
-						b.at<float>(y * windows_size + x, 0) = next_gray_img.at<float>(j - windows_size / 2 + y, i - windows_size / 2 + x) - gray_img.at<float>(j - windows_size / 2 + y, i - windows_size / 2 + x);
+						b.at<float>(y * windows_size + x, 0) = -(next_gray_img.at<float>(j - windows_size / 2 + y, i - windows_size / 2 + x) - gray_img.at<float>(j - windows_size / 2 + y, i - windows_size / 2 + x));
 						A.at<float>(y * windows_size + x, 0) = next_img_grad_x.at<float>(j - windows_size / 2 + y, i - windows_size / 2 + x);
 						A.at<float>(y * windows_size + x, 1) = next_img_grad_y.at<float>(j - windows_size / 2 + y, i - windows_size / 2 + x);
 						
 					}
-				//cvMatMul(A.t(), b, ATb);
+				//compute (A^T)b matrix
 				AT = A.t();
 				ATb = matrix_mul(AT, b);
-				//gemm(A, b, 1, NULL, 0, ATb, GEMM_1_T);
 				mulTransposed(A, ATA, true);
+				//compute u and v
 				uv = matrix_mul(ATA.inv(), ATb);
-				//int u = (int)uv.at<float>(0, 0), v = (int)uv.at<float>(1, 0);
 				float u = uv.at<float>(0, 0), v = uv.at<float>(1, 0);
 				cout << "i:" << i << "  j:" << j << endl;
 				cout << "u:" << u << "  v:" << v << endl;
+				//scaling u and v with 100
 				line(OF_img, Point(i, j), Point(i + u*100, j + v*100), Scalar(0, 255, 255), 2);
 			}
 		}
